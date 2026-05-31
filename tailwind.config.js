@@ -1,71 +1,76 @@
-import { ShoppingCart, Zap, X } from 'lucide-react';
-
-export default function Navbar({ cartCount, onCartToggle, showCart }) {
-  return (
-    <nav className="sticky top-0 z-50 w-full border-b border-white/5 backdrop-blur-xl bg-surface-900/80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-
-          {/* Logo */}
-          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => showCart && onCartToggle()}>
-            <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center shadow-lg shadow-brand-500/30">
-              <Zap size={16} className="text-white" fill="white" />
-            </div>
-            <span className="font-display font-700 text-lg text-white tracking-tight">
-              Digi<span className="text-gradient">Tools</span>
-            </span>
-          </div>
-
-          {/* Nav Links */}
-          <div className="hidden md:flex items-center gap-7">
-            {['Products', 'Pricing', 'Blog', 'Support'].map((link) => (
-              <a
-                key={link}
-                href="#"
-                className="text-sm font-medium text-slate-400 hover:text-white transition-colors duration-200"
-              >
-                {link}
-              </a>
-            ))}
-          </div>
-
-          {/* Right side */}
-          <div className="flex items-center gap-3">
-            <button
-              className="hidden sm:block text-sm font-medium text-slate-300 hover:text-white transition-colors px-4 py-2 rounded-lg hover:bg-white/5"
-            >
-              Sign In
-            </button>
-
-            {/* Cart Button */}
-            <button
-              onClick={onCartToggle}
-              className={`relative flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-300 ${
-                showCart
-                  ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/30'
-                  : 'bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10'
-              }`}
-            >
-              {showCart ? (
-                <>
-                  <X size={16} />
-                  <span className="hidden sm:inline">Close Cart</span>
-                </>
-              ) : (
-                <>
-                  <ShoppingCart size={16} />
-                  <span className="hidden sm:inline">Cart</span>
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-cyan-400 text-surface-900 text-xs font-display font-bold leading-none animate-bounce-once">
-                      {cartCount}
-                    </span>
-                  )}
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-    </nav>
-  );
-}
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ["'Syne'", "sans-serif"],
+        body: ["'DM Sans'", "sans-serif"],
+      },
+      colors: {
+        brand: {
+          50:  "#eef2ff",
+          100: "#e0e7ff",
+          400: "#818cf8",
+          500: "#6366f1",
+          600: "#4f46e5",
+          700: "#4338ca",
+        },
+        surface: {
+          900: "#06060c",
+          800: "#0e0e1a",
+          700: "#14141f",
+          600: "#1c1c2e",
+          500: "#252538",
+        },
+        cyan: {
+          400: "#22d3ee",
+          500: "#06b6d4",
+        },
+      },
+      backgroundImage: {
+        "grid-pattern":
+          "linear-gradient(rgba(99,102,241,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,0.05) 1px,transparent 1px)",
+      },
+      backgroundSize: {
+        "grid-size": "40px 40px",
+      },
+      animation: {
+        "fade-up": "fadeUp 0.5s ease forwards",
+        "float": "float 6s ease-in-out infinite",
+        "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      },
+      keyframes: {
+        fadeUp: {
+          "0%": { opacity: "0", transform: "translateY(24px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-12px)" },
+        },
+      },
+    },
+  },
+  plugins: [require("daisyui")],
+  daisyui: {
+    themes: [
+      {
+        digitools: {
+          primary: "#6366f1",
+          secondary: "#22d3ee",
+          accent: "#f59e0b",
+          neutral: "#1c1c2e",
+          "base-100": "#0e0e1a",
+          "base-200": "#14141f",
+          "base-300": "#1c1c2e",
+          info: "#22d3ee",
+          success: "#10b981",
+          warning: "#f59e0b",
+          error: "#ef4444",
+        },
+      },
+    ],
+    darkTheme: "digitools",
+  },
+};

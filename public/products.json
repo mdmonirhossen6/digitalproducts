@@ -1,0 +1,155 @@
+[
+  {
+    "id": "1",
+    "name": "DevFlow Pro",
+    "category": "Developer",
+    "icon": "💻",
+    "badge": "Bestseller",
+    "price": 49,
+    "originalPrice": 99,
+    "rating": 4.9,
+    "reviews": 1420,
+    "features": [
+      "Hot-reloading API templates",
+      "Pre-configured Docker environments",
+      "Lifetime free updates",
+      "Priority Discord support"
+    ]
+  },
+  {
+    "id": "2",
+    "name": "AIPen Writer",
+    "category": "AI Tools",
+    "icon": "✍️",
+    "badge": "New",
+    "price": 29,
+    "originalPrice": 59,
+    "rating": 4.7,
+    "reviews": 310,
+    "features": [
+      "SEO-optimized blog generation",
+      "Social media post creator",
+      "Advanced paraphrasing mode",
+      "Supports 25+ languages"
+    ]
+  },
+  {
+    "id": "3",
+    "name": "DesignSystem UI",
+    "category": "Design",
+    "icon": "🎨",
+    "badge": "Trending",
+    "price": 39,
+    "originalPrice": 79,
+    "rating": 4.8,
+    "reviews": 850,
+    "features": [
+      "500+ premium Figma components",
+      "React/Tailwind components",
+      "Light & dark mode support",
+      "Commercial use license"
+    ]
+  },
+  {
+    "id": "4",
+    "name": "SecurePass Vault",
+    "category": "Security",
+    "icon": "🛡️",
+    "badge": "Hot",
+    "price": 19,
+    "originalPrice": 39,
+    "rating": 4.9,
+    "reviews": 920,
+    "features": [
+      "Zero-knowledge encryption",
+      "Biometric unlock support",
+      "Cross-device sync",
+      "Self-hosted option"
+    ]
+  },
+  {
+    "id": "5",
+    "name": "Analytix Dashboard",
+    "category": "Analytics",
+    "icon": "📈",
+    "badge": "Popular",
+    "price": 59,
+    "originalPrice": 120,
+    "rating": 4.6,
+    "reviews": 640,
+    "features": [
+      "Real-time event tracking",
+      "Custom report builder",
+      "GDPR-compliant analytics",
+      "Slack & email alerts"
+    ]
+  },
+  {
+    "id": "6",
+    "name": "Tasky Board",
+    "category": "Productivity",
+    "icon": "⚡",
+    "badge": "Sale",
+    "price": 15,
+    "originalPrice": 30,
+    "rating": 4.8,
+    "reviews": 1100,
+    "features": [
+      "Drag-and-drop Kanban",
+      "Time tracking integration",
+      "Team collaboration tools",
+      "Offline-first sync"
+    ]
+  },
+  {
+    "id": "7",
+    "name": "Castify Studio",
+    "category": "Media",
+    "icon": "🎙️",
+    "badge": "New",
+    "price": 34,
+    "originalPrice": 69,
+    "rating": 4.7,
+    "reviews": 180,
+    "features": [
+      "One-click audio noise removal",
+      "Multi-track editor",
+      "Direct publishing to Spotify",
+      "High-fidelity export"
+    ]
+  },
+  {
+    "id": "8",
+    "name": "NoCodeBuilder",
+    "category": "No-Code",
+    "icon": "🧩",
+    "badge": "Bestseller",
+    "price": 79,
+    "originalPrice": 159,
+    "rating": 4.8,
+    "reviews": 540,
+    "features": [
+      "Visual drag-and-drop builder",
+      "Database integration",
+      "Custom domain mapping",
+      "Stripe payment gateway built-in"
+    ]
+  },
+  {
+    "id": "9",
+    "name": "CloudVault Pro",
+    "category": "Storage",
+    "icon": "☁️",
+    "badge": "Popular",
+    "price": 25,
+    "originalPrice": 49,
+    "rating": 4.9,
+    "reviews": 730,
+    "features": [
+      "Secure S3-compatible cloud storage",
+      "Fast global CDN",
+      "Automated backups",
+      "API keys management"
+    ]
+  }
+]
