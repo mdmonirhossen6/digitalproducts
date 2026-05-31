@@ -3,14 +3,12 @@ import ProductCard from './ProductCard';
 
 const CATEGORIES = ['All', 'Productivity', 'Design', 'Security', 'Analytics', 'AI Tools', 'Media', 'Developer', 'No-Code', 'Storage'];
 
-export default function ProductGrid({ products, cart, onAddToCart }) {
+export default function ProductGrid({ products }) {
   const [activeCategory, setActiveCategory] = useState('All');
 
   const filtered = activeCategory === 'All'
     ? products
     : products.filter(p => p.category === activeCategory);
-
-  const cartIds = new Set(cart.map(c => c.id));
 
   return (
     <section id="products" className="py-16">
@@ -49,8 +47,6 @@ export default function ProductGrid({ products, cart, onAddToCart }) {
               <ProductCard
                 key={product.id}
                 product={product}
-                onAddToCart={onAddToCart}
-                inCart={cartIds.has(product.id)}
                 index={index}
               />
             ))}

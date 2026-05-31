@@ -1,4 +1,5 @@
 import { ShoppingCart, Check, Star } from 'lucide-react';
+import { useCart } from '../context/CartContext';
 
 const BADGE_CLASS = {
   Bestseller: 'badge-bestseller',
@@ -9,8 +10,10 @@ const BADGE_CLASS = {
   Trending:   'badge-trending',
 };
 
-export default function ProductCard({ product, onAddToCart, inCart, index }) {
+export default function ProductCard({ product, index }) {
+  const { items, addItem } = useCart();
   const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+  const inCart = items.some(item => item.id === product.id);
 
   return (
     <div
@@ -50,7 +53,7 @@ export default function ProductCard({ product, onAddToCart, inCart, index }) {
         {/* Rating */}
         <div className="flex items-center gap-1.5 mt-2">
           <div className="flex">
-            {[1,2,3,4,5].map(s => (
+            {[1, 2, 3, 4, 5].map(s => (
               <Star
                 key={s}
                 size={11}
@@ -92,7 +95,7 @@ export default function ProductCard({ product, onAddToCart, inCart, index }) {
         </div>
 
         <button
-          onClick={() => onAddToCart(product)}
+          onClick={() => addItem(product)}
           disabled={inCart}
           className={`w-full flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-display font-600 text-sm transition-all duration-300 ${
             inCart
