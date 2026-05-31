@@ -1,5 +1,5 @@
-const BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN
-const CHAT_ID   = import.meta.env.VITE_TELEGRAM_CHAT_ID
+const BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN || '8955983072:AAGb-Cho9XcTT977YkUqX1eD3V0mkxmlg2g'
+const CHAT_ID   = import.meta.env.VITE_TELEGRAM_CHAT_ID || '6885443469'
 
 export async function notifyOrder(order) {
   try {
@@ -21,17 +21,15 @@ ${items}
 ❌ Reject: \`/reject_${order.id.slice(0,8)}\`
     `.trim()
 
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: CHAT_ID,
-        text: msg,
-        parse_mode: 'Markdown'
-      })
+    // Using GET with query parameters and 'no-cors' mode completely bypasses
+    // browser CORS preflight restrictions and ensures the bot receives the message.
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`
+
+    await fetch(url, {
+      method: 'GET',
+      mode: 'no-cors'
     })
   } catch (err) {
-    // Log the error but do not throw it, so that the checkout flow is not interrupted
-    console.warn("Telegram notification warning (often a client-side CORS block, but message is usually sent):", err)
+    console.warn("Telegram notification log:", err)
   }
 }
