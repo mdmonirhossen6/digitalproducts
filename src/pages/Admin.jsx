@@ -250,6 +250,18 @@ export default function Admin() {
     }
   }
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-surface-800 flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg text-brand-500" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-surface-800 text-white pt-24 p-6 relative overflow-hidden">
       {/* Background decorations */}
