@@ -17,7 +17,7 @@ export default function Checkout() {
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState('');
 
-  const BKASH_NUMBER = import.meta.env.VITE_BKASH_NUMBER || '017XXXXXXXX';
+  const BKASH_NUMBER = import.meta.env.VITE_BKASH_NUMBER || '01816827567';
   const originalTotal = items.reduce((s, i) => s + (i.originalPrice || i.price), 0);
   const savings = originalTotal - total;
 
