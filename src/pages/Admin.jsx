@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Package, ShoppingCart, DollarSign, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Shield, Package, ShoppingCart, DollarSign, Clock, CheckCircle, XCircle, Plus, Edit3, Trash2, UploadCloud, Layers } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const STATUS_COLOR = {
@@ -18,6 +18,22 @@ export default function Admin() {
   const [products, setProducts] = useState([]);
   const [tab, setTab]           = useState('orders');
   const [stats, setStats]       = useState({ totalSales: 0, pendingCount: 0, confirmedCount: 0 });
+
+  // Modal and CRUD states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null); // null = Add, object = Edit
+  const [productForm, setProductForm] = useState({
+    name: '',
+    description: '',
+    price: '',
+    original_price: '',
+    icon: '💻',
+    category: 'developer',
+    download_url: ''
+  });
+  const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingZip, setUploadingZip] = useState(false);
 
   useEffect(() => {
     if (!authLoading) {
@@ -76,6 +92,161 @@ export default function Admin() {
       fetchProducts();
     } catch (err) {
       toast.error(`Error updating product: ${err.message}`);
+    }
+  }
+
+  // Open modal for adding a new product
+  function handleOpenAddModal() {
+    setEditingProduct(null);
+    setProductForm({
+      name: '',
+      description: '',
+      price: '',
+      original_price: '',
+      icon: '💻',
+      category: 'developer',
+      download_url: ''
+    });
+    setIsModalOpen(true);
+  }
+
+  // Open modal for editing a product
+  function handleOpenEditModal(p) {
+    setEditingProduct(p);
+    setProductForm({
+      name: p.name || '',
+      description: p.description || '',
+      price: p.price || '',
+      original_price: p.original_price || '',
+      icon: p.icon || '💻',
+      category: p.category || 'developer',
+      download_url: p.download_url || ''
+    });
+    setIsModalOpen(true);
+  }
+
+  // Submit add or edit form
+  async function handleSaveProduct(e) {
+    e.preventDefault();
+    if (!productForm.name || !productForm.price) {
+      return toast.error("Please enter a name and price.");
+    }
+    
+    setSaving(true);
+    try {
+      const payload = {
+        name: productForm.name,
+        description: productForm.description,
+        price: parseFloat(productForm.price),
+        original_price: productForm.original_price ? parseFloat(productForm.original_price) : null,
+        icon: productForm.icon,
+        category: productForm.category,
+        download_url: productForm.download_url,
+      };
+
+      if (editingProduct) {
+        // Edit existing product
+        const { error } = await supabase
+          .from('products')
+          .update(payload)
+          .eq('id', editingProduct.id);
+
+        if (error) throw error;
+        toast.success("Product updated successfully!");
+      } else {
+        // Add new product
+        const { error } = await supabase
+          .from('products')
+          .insert({ ...payload, is_active: true });
+
+        if (error) throw error;
+        toast.success("Product added successfully!");
+      }
+
+      setIsModalOpen(false);
+      fetchProducts();
+    } catch (err) {
+      toast.error(`Error saving product: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // Delete product
+  async function handleDeleteProduct(id) {
+    if (!window.confirm("Are you sure you want to permanently delete this product?")) return;
+
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success("Product deleted successfully!");
+      fetchProducts();
+    } catch (err) {
+      toast.error(`Error deleting product: ${err.message}`);
+    }
+  }
+
+  // Handle uploading product image to Supabase Storage
+  async function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `product-images/${fileName}`;
+
+      // Upload to 'product-images' bucket
+      const { error } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      setProductForm(prev => ({ ...prev, icon: publicUrl }));
+      toast.success("Image uploaded successfully!");
+    } catch (err) {
+      toast.error(`Image upload failed: ${err.message}. Make sure 'product-images' bucket is created in Supabase storage.`);
+    } finally {
+      setUploadingImage(false);
+    }
+  }
+
+  // Handle uploading product zip payload to Supabase Storage
+  async function handleZipUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingZip(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `downloads/${fileName}`;
+
+      // Upload to 'downloads' bucket
+      const { error } = await supabase.storage
+        .from('downloads')
+        .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('downloads')
+        .getPublicUrl(filePath);
+
+      setProductForm(prev => ({ ...prev, download_url: publicUrl }));
+      toast.success("Download file uploaded successfully!");
+    } catch (err) {
+      toast.error(`Download file upload failed: ${err.message}. Make sure 'downloads' bucket is created in Supabase storage.`);
+    } finally {
+      setUploadingZip(false);
     }
   }
 
@@ -221,39 +392,239 @@ export default function Admin() {
           )}
 
           {tab === 'products' && (
-            products.length === 0 ? (
-              <div className="text-center py-20 text-slate-500">
-                <Package size={40} className="mx-auto mb-4 opacity-30" />
-                <p className="font-semibold text-lg">No products configured in database</p>
+            <div className="space-y-6">
+              {/* Add product button bar */}
+              <div className="flex justify-end">
+                <button
+                  onClick={handleOpenAddModal}
+                  className="flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white px-5 py-2.5 rounded-xl font-display font-700 text-sm transition-all duration-300 shadow-md shadow-brand-500/25 active:scale-95"
+                >
+                  <Plus size={16} /> Add New Product
+                </button>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {products.map(p => (
-                  <div key={p.id} className="bg-surface-700/50 backdrop-blur-xl border border-white/6 rounded-2xl p-5 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-xl bg-surface-600 border border-white/8 flex items-center justify-center text-xl shrink-0">
-                        {p.icon}
+
+              {products.length === 0 ? (
+                <div className="text-center py-20 text-slate-500 bg-surface-700/30 rounded-2xl border border-white/5">
+                  <Package size={40} className="mx-auto mb-4 opacity-30" />
+                  <p className="font-semibold text-lg">No products configured in database</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {products.map(p => (
+                    <div key={p.id} className="bg-surface-700/50 backdrop-blur-xl border border-white/6 rounded-2xl p-5 flex flex-col justify-between hover:border-white/12 transition-all duration-300 glow-border">
+                      <div className="flex items-start justify-between gap-4 mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-xl bg-surface-600 border border-white/8 flex items-center justify-center shrink-0 overflow-hidden text-xl">
+                            {p.icon && p.icon.startsWith('http') ? (
+                              <img src={p.icon} alt={p.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span>{p.icon || '💻'}</span>
+                            )}
+                          </div>
+                          <div>
+                            <h4 className="font-display font-600 text-white text-base leading-snug">{p.name}</h4>
+                            <p className="text-xs text-slate-500 mt-0.5 capitalize">{p.category} · <span className="text-brand-400 font-semibold">${p.price}</span></p>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleOpenEditModal(p)}
+                            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/5 transition-colors"
+                            title="Edit Product"
+                          >
+                            <Edit3 size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProduct(p.id)}
+                            className="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/10 transition-colors"
+                            title="Delete Product"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-display font-600 text-white text-sm">{p.name}</h4>
-                        <p className="text-xs text-slate-500">{p.category} · <span className="text-brand-400 font-semibold">${p.price}</span></p>
+
+                      {p.description && (
+                        <p className="text-xs text-slate-400 line-clamp-2 mb-4 leading-relaxed">
+                          {p.description}
+                        </p>
+                      )}
+
+                      <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                        <span className="text-[10px] text-slate-500 font-mono select-all">ID: {p.id.slice(0, 18)}...</span>
+                        <button
+                          onClick={() => toggleProduct(p.id, p.is_active)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wider uppercase border transition-all duration-300 ${p.is_active
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
+                            : 'bg-white/5 text-slate-500 border-white/10 hover:bg-white/10'
+                            }`}
+                        >
+                          {p.is_active ? 'Active' : 'Inactive'}
+                        </button>
                       </div>
                     </div>
-                    <button
-                      onClick={() => toggleProduct(p.id, p.is_active)}
-                      className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wider uppercase border transition-all duration-300 ${p.is_active
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
-                        : 'bg-white/5 text-slate-500 border-white/10 hover:bg-white/10'
-                        }`}
-                    >
-                      {p.is_active ? 'Active' : 'Inactive'}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </div>
+
+        {/* CRUD Modal overlay */}
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-900/80 backdrop-blur-md animate-fade-in">
+            <div className="bg-surface-850 border border-white/8 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative">
+              <h2 className="font-display font-800 text-xl text-white mb-6">
+                {editingProduct ? 'Edit Digital Tool' : 'Add New Digital Tool'}
+              </h2>
+
+              <form onSubmit={handleSaveProduct} className="space-y-4">
+                {/* Name */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Product Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. NoteSprint Pro"
+                    className="w-full bg-surface-700/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-brand-500 outline-none"
+                    value={productForm.name}
+                    onChange={e => setProductForm(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                </div>
+
+                {/* Price & Original Price */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Price (USD)</label>
+                    <input
+                      type="number"
+                      required
+                      step="0.01"
+                      placeholder="39"
+                      className="w-full bg-surface-700/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-brand-500 outline-none"
+                      value={productForm.price}
+                      onChange={e => setProductForm(prev => ({ ...prev, price: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Original Price (optional)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="59"
+                      className="w-full bg-surface-700/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-brand-500 outline-none"
+                      value={productForm.original_price}
+                      onChange={e => setProductForm(prev => ({ ...prev, original_price: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                {/* Category */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Category</label>
+                  <select
+                    className="w-full bg-surface-700/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-brand-500 outline-none"
+                    value={productForm.category}
+                    onChange={e => setProductForm(prev => ({ ...prev, category: e.target.value }))}
+                  >
+                    <option value="developer">Developer Tools</option>
+                    <option value="seo">SEO & Marketing</option>
+                    <option value="ai">AI Tools</option>
+                    <option value="graphics">Design & Graphics</option>
+                  </select>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Description</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Short description of the software features..."
+                    className="w-full bg-surface-700/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-brand-500 outline-none"
+                    value={productForm.description}
+                    onChange={e => setProductForm(prev => ({ ...prev, description: e.target.value }))}
+                  />
+                </div>
+
+                {/* Icon / Image upload */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Product Icon (Emoji, URL or Upload file)</label>
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      placeholder="e.g. 💻 or https://..."
+                      className="flex-1 bg-surface-700/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-brand-500 outline-none"
+                      value={productForm.icon}
+                      onChange={e => setProductForm(prev => ({ ...prev, icon: e.target.value }))}
+                    />
+                    <label className="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-300 font-semibold flex items-center justify-center gap-1.5 transition-colors">
+                      <UploadCloud size={14} />
+                      <span>{uploadingImage ? 'Uploading...' : 'Upload Image'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageUpload}
+                        disabled={uploadingImage}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Download url / file upload */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Download Payload URL (.zip package)</label>
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      placeholder="https://delivery.digitools.cloud/..."
+                      className="flex-1 bg-surface-700/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-brand-500 outline-none"
+                      value={productForm.download_url}
+                      onChange={e => setProductForm(prev => ({ ...prev, download_url: e.target.value }))}
+                    />
+                    <label className="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-300 font-semibold flex items-center justify-center gap-1.5 transition-colors">
+                      <UploadCloud size={14} />
+                      <span>{uploadingZip ? 'Uploading...' : 'Upload Zip'}</span>
+                      <input
+                        type="file"
+                        accept=".zip,.rar,.tar"
+                        className="hidden"
+                        onChange={handleZipUpload}
+                        disabled={uploadingZip}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Footer action buttons */}
+                <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving || uploadingImage || uploadingZip}
+                    className="flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md shadow-brand-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {saving ? (
+                      <span className="loading loading-spinner loading-xs text-white" />
+                    ) : (
+                      <>
+                        <span>{editingProduct ? 'Save Changes' : 'Create Product'}</span>
+                        <CheckCircle size={15} />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
