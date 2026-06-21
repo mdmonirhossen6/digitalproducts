@@ -118,25 +118,14 @@ export default function CartSidebar({ isOpen, onClose }) {
                 </div>
 
                 {/* Checkout Navigation */}
-                {user ? (
-                  <Link
-                    to="/checkout"
-                    onClick={onClose}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-display font-700 text-sm bg-brand-500 hover:bg-brand-600 text-white transition-all duration-300 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/40 active:scale-95"
-                  >
-                    <span>Proceed to Checkout</span>
-                    <ArrowRight size={15} />
-                  </Link>
-                ) : (
-                  <Link
-                    to="/login"
-                    onClick={onClose}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-display font-700 text-sm bg-brand-500 hover:bg-brand-600 text-white transition-all duration-300 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/40 active:scale-95"
-                  >
-                    <span>Sign In to Checkout</span>
-                    <ArrowRight size={15} />
-                  </Link>
-                )}
+                <Link
+                  to="/checkout"
+                  onClick={onClose}
+                  className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-display font-700 text-sm bg-brand-500 hover:bg-brand-600 text-white transition-all duration-300 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/40 active:scale-95"
+                >
+                  <span>Proceed to Checkout</span>
+                  <ArrowRight size={15} />
+                </Link>
 
                 <p className="text-center text-[10px] text-slate-500">
                   🔒 Secure checkout via bKash · Instant bot notification

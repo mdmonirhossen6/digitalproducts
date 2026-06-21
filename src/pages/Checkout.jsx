@@ -11,6 +11,7 @@ export default function Checkout() {
   const { items, total, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [guestEmail, setGuestEmail] = useState('');
   const [bkashNum, setBkashNum] = useState('');
   const [trxId, setTrxId]       = useState('');
   const [loading, setLoading]   = useState(false);
@@ -23,6 +24,10 @@ export default function Checkout() {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!bkashNum || !trxId) return setError('Please fill in both fields.');
+    
+    const emailToUse = user ? user.email : guestEmail;
+    if (!emailToUse) return setError('Please enter your email address.');
+    
     setError('');
     setLoading(true);
 
@@ -30,8 +35,8 @@ export default function Checkout() {
       const { data: order, error: err } = await supabase
         .from('orders')
         .insert({
-          user_id:     user.id,
-          user_email:  user.email,
+          user_id:     user?.id || null,
+          user_email:  emailToUse,
           items:       items,
           total_amount: total,
           bkash_number: bkashNum,
@@ -42,6 +47,13 @@ export default function Checkout() {
         .single();
 
       if (err) throw err;
+
+      // Save guest order locally to track it easily without account signup
+      if (!user) {
+        const existingGuestOrders = JSON.parse(localStorage.getItem('guest_orders') || '[]');
+        existingGuestOrders.push({ id: order.id, email: emailToUse, trxId: trxId });
+        localStorage.setItem('guest_orders', JSON.stringify(existingGuestOrders));
+      }
 
       // Notify Bot
       await notifyOrder(order);
@@ -178,6 +190,20 @@ export default function Checkout() {
             <div className="bg-surface-700/60 backdrop-blur-xl border border-white/6 rounded-2xl p-6">
               <h3 className="font-display font-600 text-base text-white mb-4">Complete Your Order</h3>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {!user && (
+                  <div>
+                    <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Your Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="yourname@example.com"
+                      className="w-full bg-surface-600/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all duration-200"
+                      value={guestEmail}
+                      onChange={e => setGuestEmail(e.target.value)}
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Your bKash Number (Sender)</label>
                   <input

@@ -27,11 +27,9 @@ export default function Navbar({ onCartToggle }) {
             <Link to="/" className="text-sm font-medium text-slate-300 hover:text-white transition-colors duration-200">
               Home
             </Link>
-            {user && (
-              <Link to="/orders" className="text-sm font-medium text-slate-300 hover:text-white transition-colors duration-200">
-                My Purchases
-              </Link>
-            )}
+            <Link to="/orders" className="text-sm font-medium text-slate-300 hover:text-white transition-colors duration-200">
+              My Purchases
+            </Link>
             {isAdmin && (
               <Link to="/admin" className="text-sm font-medium text-rose-400 hover:text-rose-300 flex items-center gap-1.5 transition-colors duration-200">
                 <ShieldAlert size={14} /> Admin Dashboard
